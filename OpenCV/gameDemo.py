@@ -1,6 +1,6 @@
 import sys
 #Change the following line
-sys.path.append('C:\Python310\Lib\site-packages\cv2')
+sys.path.append(r'your …\site-packages\cv2 path')
 
 import numpy as np
 import cv2
@@ -29,13 +29,18 @@ mpDraw = mp.solutions.drawing_utils
 class App(object):
     def __init__(self, video_src):
         self.cam = cv2.VideoCapture(video_src)
-        self.frame = self.cam.read()
+        if not self.cam.isOpened():
+            print(f"Error: Failed to open video source {video_src}")
+            sys.exit(1)
 
     def run(self):
         while True:
-            #mpPose
             success, img = self.cam.read()
+            if not success:
+                print("Failed to grab frame")
+                break  # 或者可以选择其他处理方式，如重试或退出
             imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            # 接下来的处理...
             results = pose.process(imgRGB)
             #print(results.pose_landmarks)
             if results.pose_landmarks:
@@ -44,8 +49,8 @@ class App(object):
                     h, w,c = img.shape
                     #print("ID:",id,"/n",lm)
                     #id chosen based off of pose tracking landmark image. (./pose_tracking_full_body_landmarks.png)
-                    #...0 = nose.
-                    if id == 0:
+                    #...0 = nose. https://chuoling.github.io/mediapipe/solutions/pose.html
+                    if id == 19:
                         print((results.pose_landmarks.landmark[id]))
                         b2= bytes(str( (results.pose_landmarks.landmark[id]) ),encoding='utf-8')
                         sock.sendto(b2,(UDP_IP,UDP_PORT))
@@ -66,7 +71,7 @@ if __name__ == '__main__':
     import sys
     try: video_src = sys.argv[1]
     #Changed video_src based off of webcam originally the value was 0.
-    except: video_src = 1
+    except: video_src = 0
     print ("sys.agrv: ", sys.argv, len(sys.argv))
     print ("sys.__doc__: ", __doc__)
     print (video_src)
